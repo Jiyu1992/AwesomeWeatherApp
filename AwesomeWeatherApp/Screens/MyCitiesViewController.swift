@@ -8,7 +8,7 @@
 import UIKit
 import CoreData
 
-class MyCitiesViewController: UIViewController, UISearchResultsUpdating, UICollectionViewDelegate, SearchResultsViewControllerDelegate{
+class MyCitiesViewController: UIViewController, UISearchResultsUpdating, UICollectionViewDelegate, SearchResultsViewControllerDelegate, ModalAddingDelegate{
     
     let appDelegate = UIApplication.shared.delegate as? AppDelegate
     
@@ -62,27 +62,11 @@ class MyCitiesViewController: UIViewController, UISearchResultsUpdating, UIColle
         // Do any additional setup after loading the view.
     }
     
-
-    
-    func delete(at ip: IndexPath) {
-//        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else {return}
-        guard let managedContext = appDelegate?.managedContext else{return}
-        var snapshot = self.dataSource.snapshot()
-        if let id = self.dataSource.itemIdentifier(for: ip) {
-            snapshot.deleteItems([id])
-//            let managedContext = appDelegate.persistentContainer.viewContext
-            managedContext.delete(id)
-            
-        }
-//      we shouldnt use applySnapshot here because it wiil contain the old snapShot
-        self.dataSource.apply(snapshot)
-    }
-    
+//  MARK: Fetching from core data
     func fetchFromCoreData(){
          
         guard let managedContext = appDelegate?.managedContext else{return}
          
-//        let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: "MyCity")
         let fetchRequest = MyCity.fetchRequest()
          
         do {
@@ -90,6 +74,21 @@ class MyCitiesViewController: UIViewController, UISearchResultsUpdating, UIColle
         } catch let error as NSError {
             print("Could not fetch. \(error), \(error.userInfo)")
         }
+    }
+    
+//  MARK: Datasource associated code
+    func delete(at ip: IndexPath) {
+        guard let managedContext = appDelegate?.managedContext else{return}
+        var snapshot = self.dataSource.snapshot()
+        if let id = self.dataSource.itemIdentifier(for: ip) {
+//          show the change immidiatelly
+            snapshot.deleteItems([id])
+            managedContext.delete(id)
+        }
+//      secure the change by changing the datasource array and informing the snapshot
+        fetchFromCoreData()
+        applySnapshot()
+//        self.dataSource.apply(snapshot)
     }
     
     
@@ -117,15 +116,14 @@ class MyCitiesViewController: UIViewController, UISearchResultsUpdating, UIColle
                 var config = UIListContentConfiguration.cell()
 
                 config.text = String(fullName?.split(separator: ",")[0] ?? "")
-//                config.image = UIImage(systemName: "globe.europe.africa")
                 cell?.contentConfiguration = config
-//                let delete = UICellAccessory.delete(displayed: .whenEditing, options:.init(isHidden: false, reservedLayoutWidth: .standard, tintColor: .white, backgroundColor: .red), actionHandler: nil)
-//                cell?.accessories = [delete]
                 
                 return cell
         })
         return dataSource
     }
+    
+//  MARK: Search controller config and functionality
     
     func configureSearchController() {
         let storyBoard = UIStoryboard(name: "Main", bundle: nil)
@@ -168,7 +166,7 @@ class MyCitiesViewController: UIViewController, UISearchResultsUpdating, UIColle
         let entity = MyCity.entity()
           
         let coreDataCity = MyCity.init(entity: entity, insertInto: managedContext)
-        coreDataCity.name = myCity.name
+        coreDataCity.name = myCity.name ?? ""
         coreDataCity.region = myCity.region
         coreDataCity.lat = myCity.lat ?? 0.0
         coreDataCity.lon = myCity.lon ?? 0.0
@@ -184,22 +182,37 @@ class MyCitiesViewController: UIViewController, UISearchResultsUpdating, UIColle
           }
     }
         
-//  protocol conformance
+//  MARK: - protocol conformance
     func didSelectCity(city: Location, shouldAddCity: Bool) {
         searchController.isActive = false
 //      empty the datasource of the searchController else leave the last search up
         searchResultVC.cities = []
+        
+        pushToHome(withCity: city, modaly: true, shouldAddCity: shouldAddCity)
+    }
+    
+    func didAddCity(city: Location, shouldAddCity: Bool) {
         if shouldAddCity {
             addACity(myCity: city)
         }
         applySnapshot()
+        dismiss(animated: true, completion: nil)
+        
     }
-    
-    func pushToHome(withCityName: String){
+//   MARK: Helpers
+    func pushToHome(withCity: Location, modaly: Bool, shouldAddCity: Bool){
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         let homeVC = storyboard.instantiateViewController(withIdentifier: "HomeViewController") as! HomeViewController
-        homeVC.cityNameFromMyCities = withCityName
-        self.navigationController?.pushViewController(homeVC, animated: true)
+        homeVC.cityNameFromMyCities = withCity.name!
+        homeVC.modalDelegate = self
+        if modaly{
+            homeVC.shouldShowAdd = shouldAddCity
+            homeVC.shouldShowCancel = true
+            present(homeVC, animated: true, completion: nil)
+        }else{
+            self.navigationController?.pushViewController(homeVC, animated: true)
+        }
+        
     }
     
     

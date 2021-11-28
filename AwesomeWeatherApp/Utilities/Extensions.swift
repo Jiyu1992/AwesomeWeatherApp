@@ -25,7 +25,7 @@ extension UIViewController {
         let calendar = Calendar.current
         let currentHour = calendar.component(.hour, from: Date())
         if calendar.component(.hour, from: date) == currentHour{
-            return "now"
+            return "Now"
         }
         let returnHour = calendar.component(.hour, from: date)
         let returnMinute = calendar.component(.minute, from: date)

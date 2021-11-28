@@ -32,6 +32,8 @@
 		B8992815274AFEF200E9FE3E /* SearchResultsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8992814274AFEF200E9FE3E /* SearchResultsViewController.swift */; };
 		B8A8D76A275285FA00BF7E0A /* ForecastViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8A8D769275285FA00BF7E0A /* ForecastViewController.swift */; };
 		B8A8D76C27528B6300BF7E0A /* DayTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8A8D76B27528B6300BF7E0A /* DayTableViewCell.swift */; };
+		B8A8D7702754038200BF7E0A /* FooterReusableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8A8D76F2754038200BF7E0A /* FooterReusableView.swift */; };
+		B8A8D772275403CD00BF7E0A /* HeaderReusableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8A8D771275403CD00BF7E0A /* HeaderReusableView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -81,6 +83,8 @@
 		B8992814274AFEF200E9FE3E /* SearchResultsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchResultsViewController.swift; sourceTree = "<group>"; };
 		B8A8D769275285FA00BF7E0A /* ForecastViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForecastViewController.swift; sourceTree = "<group>"; };
 		B8A8D76B27528B6300BF7E0A /* DayTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayTableViewCell.swift; sourceTree = "<group>"; };
+		B8A8D76F2754038200BF7E0A /* FooterReusableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FooterReusableView.swift; sourceTree = "<group>"; };
+		B8A8D771275403CD00BF7E0A /* HeaderReusableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeaderReusableView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -111,12 +115,8 @@
 		B83A3F88274C50D000743B1D /* ReusableViews&Cells */ = {
 			isa = PBXGroup;
 			children = (
-				B83A3F89274C510B00743B1D /* SearchResultCell.swift */,
-				B83A3F8B274D198100743B1D /* MyCitiesCollectionViewCell.swift */,
-				B83A3F9B274EFCF600743B1D /* HourlyCollectionViewCell.swift */,
-				B83A3F9D2750E1C800743B1D /* DailyCollectionViewCell.swift */,
-				B83A3F9F27510C4600743B1D /* BackgoundReusableView.swift */,
-				B8A8D76B27528B6300BF7E0A /* DayTableViewCell.swift */,
+				B8A8D7742754041D00BF7E0A /* Cells */,
+				B8A8D773275403FB00BF7E0A /* ReusableViews */,
 			);
 			path = "ReusableViews&Cells";
 			sourceTree = "<group>";
@@ -213,6 +213,28 @@
 				B8A8D769275285FA00BF7E0A /* ForecastViewController.swift */,
 			);
 			path = Screens;
+			sourceTree = "<group>";
+		};
+		B8A8D773275403FB00BF7E0A /* ReusableViews */ = {
+			isa = PBXGroup;
+			children = (
+				B83A3F9F27510C4600743B1D /* BackgoundReusableView.swift */,
+				B8A8D76F2754038200BF7E0A /* FooterReusableView.swift */,
+				B8A8D771275403CD00BF7E0A /* HeaderReusableView.swift */,
+			);
+			path = ReusableViews;
+			sourceTree = "<group>";
+		};
+		B8A8D7742754041D00BF7E0A /* Cells */ = {
+			isa = PBXGroup;
+			children = (
+				B83A3F8B274D198100743B1D /* MyCitiesCollectionViewCell.swift */,
+				B83A3F89274C510B00743B1D /* SearchResultCell.swift */,
+				B83A3F9B274EFCF600743B1D /* HourlyCollectionViewCell.swift */,
+				B83A3F9D2750E1C800743B1D /* DailyCollectionViewCell.swift */,
+				B8A8D76B27528B6300BF7E0A /* DayTableViewCell.swift */,
+			);
+			path = Cells;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -350,6 +372,7 @@
 				B89927E02749670200E9FE3E /* AwesomeWeatherApp.xcdatamodeld in Sources */,
 				B83A3F9E2750E1C900743B1D /* DailyCollectionViewCell.swift in Sources */,
 				B89927DA2749670200E9FE3E /* HomeViewController.swift in Sources */,
+				B8A8D7702754038200BF7E0A /* FooterReusableView.swift in Sources */,
 				B8992811274A9D8F00E9FE3E /* NetworkManager.swift in Sources */,
 				B83A3F97274D844E00743B1D /* MyCity+CoreDataClass.swift in Sources */,
 				B83A3F8A274C510B00743B1D /* SearchResultCell.swift in Sources */,
@@ -362,6 +385,7 @@
 				B8992815274AFEF200E9FE3E /* SearchResultsViewController.swift in Sources */,
 				B83A3FA027510C4700743B1D /* BackgoundReusableView.swift in Sources */,
 				B8A8D76C27528B6300BF7E0A /* DayTableViewCell.swift in Sources */,
+				B8A8D772275403CD00BF7E0A /* HeaderReusableView.swift in Sources */,
 				B89927D82749670200E9FE3E /* SceneDelegate.swift in Sources */,
 				B83A3F9A274E6A3300743B1D /* Extensions.swift in Sources */,
 				B83A3F9C274EFCF700743B1D /* HourlyCollectionViewCell.swift in Sources */,

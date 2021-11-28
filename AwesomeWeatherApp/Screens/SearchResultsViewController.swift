@@ -100,28 +100,36 @@ class SearchResultsViewController: UIViewController,UITableViewDelegate,UITableV
             print("Could not fetch. \(error), \(error.userInfo)")
         }
     }
-
+    
+    
+//  MARK: Tableview datasource code
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         cities?.count ?? 0
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
-        let accessoryImageViewAdd = UIImageView(image: UIImage(systemName: "plus"))
-        let accessoryImageViewAlreadyAdded = UIImageView(image: UIImage(systemName: "checkmark"))
+//        let accessoryImageViewAdd = UIImageView(image: UIImage(systemName: "plus"))
+        let accessoryImageViewAlreadyAdded = UIImageView(image: UIImage(systemName: "heart.fill"))
         let cell = tableView.dequeueReusableCell(
           withIdentifier: "SearchResultCell",
           for: indexPath) as! SearchResultCell
         
 //        var config = cell.defaultContentConfiguration()
         cell.nameLabel.text = cities?[indexPath.row].name
-        cell.accessoryView = accessoryImageViewAdd
+//        cell.accessoryView = accessoryImageViewAdd
         if let myCities = myCities, !myCities.isEmpty {
             for city in myCities {
-                if city.name == cities?[indexPath.row].name {
-                    cell.accessoryView = accessoryImageViewAlreadyAdded
-                    break
+//              last moment change in API?? act accordingly
+                if let singleName = cities?[indexPath.row].name?.split(separator: ",")[0]{
+                    if city.name == singleName{
+                        cell.accessoryView = accessoryImageViewAlreadyAdded
+                        break
+                    }else {
+                        cell.accessoryView = .none
+                    }
                 }
+               
             }
         }
         return cell
@@ -134,9 +142,11 @@ class SearchResultsViewController: UIViewController,UITableViewDelegate,UITableV
         var shouldAddCity = true
         if let myCities = myCities, !myCities.isEmpty {
             for city in myCities {
-                if city.name == cities?[indexPath.row].name {
-                    shouldAddCity = false
-                    break
+                if let singleName = cities?[indexPath.row].name?.split(separator: ",")[0]{
+                    if city.name == singleName {
+                        shouldAddCity = false
+                        break
+                    }
                 }
             }
         }

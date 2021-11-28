@@ -16,8 +16,11 @@ protocol HomeViewControllerDelegate {
     func footerBtntapped()
 }
 
+protocol ModalAddingDelegate {
+    func didAddCity(city: Location, shouldAddCity:Bool)
+}
+
 class HomeViewController: UIViewController,CLLocationManagerDelegate,UICollectionViewDelegate,MyCitiesVCDelegate, HomeViewControllerDelegate{
-    
     
     enum Section: CaseIterable {
         case hours
@@ -32,23 +35,33 @@ class HomeViewController: UIViewController,CLLocationManagerDelegate,UICollectio
 //    @IBOutlet weak var nameLabel: UILabel!
 //    @IBOutlet weak var countryLabel: UILabel!
 //    @IBOutlet weak var gradientBG:UIView!
+    @IBOutlet weak var cancelBtn: UIButton!
+    @IBOutlet weak var addBtn: UIButton!
+    @IBOutlet weak var titleLabel: UILabel!
     @IBOutlet weak var conditionLabel: UILabel!
     @IBOutlet weak var tempLabel: UILabel!
     @IBOutlet weak var weatherIconImageView: UIImageView!
     @IBOutlet weak var collectionView: UICollectionView!
+    
+    let appDelegate = UIApplication.shared.delegate as? AppDelegate
     let manager = NetworkManager()
+    var modalDelegate: ModalAddingDelegate?
     var locationManager: CLLocationManager!
     var geolocatedCity: (Double,Double)? {
         didSet{
-            let stringCity = (geolocatedCity?.0.string)! + "," + (geolocatedCity?.1.string)!
-            locationManager.stopUpdatingLocation()
-            getForecast(parameter: stringCity)
+            if cityNameFromMyCities.isEmpty {
+                let stringCity = (geolocatedCity?.0.string)! + "," + (geolocatedCity?.1.string)!
+                locationManager.stopUpdatingLocation()
+                getForecast(parameter: stringCity)
+            }
         }
     }
     var currentWeather: [Current]?
-    var currentCity: [Location]?
+    var currentCity: [MyCity]?
     var allTheData: ApiResponse?
     var cityNameFromMyCities = ""
+    var shouldShowAdd: Bool = false
+    var shouldShowCancel: Bool = false
     var bgLayer =  CAGradientLayer()
     lazy var dataSource = makeDataSource()
     
@@ -74,6 +87,11 @@ class HomeViewController: UIViewController,CLLocationManagerDelegate,UICollectio
 
         if !cityNameFromMyCities.isEmpty {
             getForecast(parameter: cityNameFromMyCities)
+        }else {
+            if geolocatedCity == nil {
+                guard let favoriteCity = UserDefaults.standard.string(forKey: "FavoriteCity") else {return}
+                getForecast(parameter: favoriteCity)
+            }
         }
     }
     
@@ -87,7 +105,19 @@ class HomeViewController: UIViewController,CLLocationManagerDelegate,UICollectio
     func setupUI(currentModel: ApiResponse?){
         
         setGradientBGColor(current: currentModel?.current, bgLayer: bgLayer)
-        self.title = currentModel?.location.name
+        titleLabel.text = currentModel?.location.name
+        
+        addBtn.addTarget(self, action: #selector(modalAddTapped), for: .touchUpInside)
+        cancelBtn.addTarget(self, action: #selector(modalCancelTapped), for: .touchUpInside)
+        
+//        if self.isBeingPresented {
+//            cancelBtn.isHidden = false
+//            addBtn.isHidden = false
+//        }
+        
+        cancelBtn.isHidden = !shouldShowCancel
+        addBtn.isHidden = !shouldShowAdd
+        
         tempLabel.text = (currentModel?.current?.tempC?.string ?? "-") + "°C"
         tempLabel.text = String(format: "%.0f", currentModel?.current?.tempC as! CVarArg) + "°C"
         conditionLabel.text = currentModel?.current?.condition?.text
@@ -99,6 +129,18 @@ class HomeViewController: UIViewController,CLLocationManagerDelegate,UICollectio
         }else{
             weatherIconImageView.image = UIImage(named: "d" + code)
         }
+    }
+    
+    @objc func modalAddTapped() {
+        guard let city = allTheData?.location else {return}
+        self.modalDelegate?.didAddCity(city: city, shouldAddCity: true)
+        
+    }
+    
+    @objc func modalCancelTapped() {
+        guard let city = allTheData?.location else {return}
+        self.modalDelegate?.didAddCity(city: city, shouldAddCity: false)
+        
     }
     
     
@@ -118,6 +160,34 @@ class HomeViewController: UIViewController,CLLocationManagerDelegate,UICollectio
         let location = locations.last! as CLLocation
         let center = CLLocationCoordinate2D(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude)
         geolocatedCity = (center.latitude,center.longitude)
+    }
+    
+    func locationManager(_ manager: CLLocationManager,
+                         didChangeAuthorization status: CLAuthorizationStatus) {
+        
+        let favoriteCity = UserDefaults.standard.string(forKey: "FavoriteCity")
+        
+        switch status {
+          case .restricted, .denied:
+            if favoriteCity == nil || favoriteCity == "" {
+                pushToMyCitiesCV()
+            }
+            break
+                
+          case .authorizedWhenInUse:
+             print("The user is kind and good :P ")
+            break
+                
+          case .authorizedAlways:
+            print("The user is most generous")
+            break
+                
+          case .notDetermined:
+            if favoriteCity == nil || favoriteCity == "" {
+                pushToMyCitiesCV()
+            }
+            break
+        }
     }
     
     
@@ -205,6 +275,7 @@ class HomeViewController: UIViewController,CLLocationManagerDelegate,UICollectio
                 return
             }
             self.allTheData = data
+            UserDefaults.standard.setValue(data.location.name, forKey: "FavoriteCity")
             DispatchQueue.main.async {
                 self.setupUI(currentModel: data)
                 self.applySnapshot()
@@ -214,7 +285,6 @@ class HomeViewController: UIViewController,CLLocationManagerDelegate,UICollectio
     
 //  MARK: Custom Protocol Conformance
     func didPickCity(name: String) {
-        print(name)
         getForecast(parameter: name)
     }
     
@@ -318,19 +388,18 @@ extension HomeViewController {
             group = .horizontal(layoutSize: groupSize, subitems: [item])
             sectionLayout = .init(group: group)
             sectionLayout.orthogonalScrollingBehavior = .continuous
-            
             sectionLayout.interGroupSpacing = 0
             sectionLayout.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
             
         case .days:
             let groupSize = NSCollectionLayoutSize(
                 widthDimension: .fractionalWidth(1),
-                heightDimension: .fractionalHeight(1/8))
+                heightDimension: .fractionalHeight(1/12))
             group = .vertical(layoutSize: groupSize, subitem: item, count: 1)
             sectionLayout = .init(group: group)
-//            sectionLayout.decorationItems = [NSCollectionLayoutDecorationItem.background(elementKind: BackgoundReusableView.reuseIdentifier)]
+            sectionLayout.decorationItems = [NSCollectionLayoutDecorationItem.background(elementKind: BackgoundReusableView.reuseIdentifier)]
             sectionLayout.interGroupSpacing = 0
-            sectionLayout.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
+            sectionLayout.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 20, bottom: 0, trailing: 20)
         }
         
         
